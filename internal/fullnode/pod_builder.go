@@ -203,6 +203,8 @@ func (b PodBuilder) Build() (*corev1.Pod, error) {
 		}
 		if vrs != nil {
 			setVersionedImages(pod, vrs)
+			setChainContainerImages(pod, vrs)
+			updatePodVersionLabel(pod, vrs.Image)
 		}
 	}
 
@@ -212,6 +214,7 @@ func (b PodBuilder) Build() (*corev1.Pod, error) {
 		}
 		if o.Image != "" {
 			setChainContainerImage(pod, o.Image)
+			updatePodVersionLabel(pod, o.Image)
 		}
 		if o.NodeSelector != nil {
 			pod.Spec.NodeSelector = o.NodeSelector
