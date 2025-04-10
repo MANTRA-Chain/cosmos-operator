@@ -55,7 +55,9 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: VERSION=${{ steps.meta.outputs.version }}
+          build-args: |
+            VERSION=${{ steps.meta.outputs.version }}
+            IMG=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Run Trivy vulnerability scanner
         run: |
