@@ -45,10 +45,14 @@ func (control NodeKeyControl) Reconcile(ctx context.Context, reporter kube.Repor
 	for _, secret := range diffed.Creates() {
 		reporter.Info("Creating node key secret", "secret", secret.Name)
 		if err := ctrl.SetControllerReference(crd, secret, control.client.Scheme()); err != nil {
-			return kube.TransientError(fmt.Errorf("set controller reference on node key secret %q: %w", secret.Name, err))
+			reporter.Error(err, fmt.Sprintf("set controller reference on node key secret %q", secret.Name))
+			return nil
+			// return kube.TransientError(fmt.Errorf("set controller reference on node key secret %q: %w", secret.Name, err))
 		}
 		if err := control.client.Create(ctx, secret); kube.IgnoreAlreadyExists(err) != nil {
-			return kube.TransientError(fmt.Errorf("create node key secret %q: %w", secret.Name, err))
+			reporter.Error(err, fmt.Sprintf("create node key secret %q", secret.Name))
+			return nil
+			// return kube.TransientError(fmt.Errorf("create node key secret %q: %w", secret.Name, err))
 		}
 	}
 
