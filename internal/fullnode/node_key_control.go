@@ -43,6 +43,19 @@ func (control NodeKeyControl) Reconcile(ctx context.Context, reporter kube.Repor
 	diffed := diff.New(existing, want)
 
 	for _, secret := range diffed.Creates() {
+		// Check if a secret with this name already exists, regardless of ownership
+		existingSecret := &corev1.Secret{}
+		err := control.client.Get(ctx, client.ObjectKey{
+			Namespace: crd.Namespace,
+			Name:      secret.Name,
+		}, existingSecret)
+
+		if err == nil && existingSecret.Name == secret.Name {
+			// Secret already exists, skip creation
+			reporter.Info("Skipping node key secret creation as it already exists", "secret", secret.Name)
+			continue
+		}
+
 		reporter.Info("Creating node key secret", "secret", secret.Name)
 		if err := ctrl.SetControllerReference(crd, secret, control.client.Scheme()); err != nil {
 			return kube.TransientError(fmt.Errorf("set controller reference on node key secret %q: %w", secret.Name, err))
